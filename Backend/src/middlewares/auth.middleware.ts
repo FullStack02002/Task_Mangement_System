@@ -6,6 +6,7 @@ import type { Request, Response, NextFunction } from "express";
 import type { IUserDocument } from "../modules/user/user.types.js";
 import { redis } from "../config/redis.js";
 
+
 export const verifyJWT = asyncHandler(async (req: Request, _: Response, next: NextFunction) => {
 
     const token =

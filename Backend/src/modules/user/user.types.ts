@@ -18,6 +18,7 @@ export interface IUser {
     authProvider?: "local" | "google" | null;
 
     avatar?: string | null;
+    timezone: string
 }
 
 export interface IUserDocument extends IUser, Document {
@@ -30,6 +31,7 @@ export interface IUserResponse {
     _id: string;
     name: string;
     email: string;
+    timezone: string;
     createdAt: Date;
     updatedAt: Date;
 }

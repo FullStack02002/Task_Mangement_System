@@ -5,6 +5,7 @@ export interface CreateUserDTO {
     email: string;
     password: string;
     role?: UserRole;
+    timezone:string;
 }
 
 
@@ -17,6 +18,7 @@ export interface UserResponseDTO {
     email: string;
     role: UserRole;
     isVerified: Boolean;
+    timezone: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -28,6 +30,7 @@ export const toUserResponseDTO = (user: any): UserResponseDTO => ({
     email: user.email,
     role: user.role,
     isVerified: user.isVerified,
+    timezone: user.timezone,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
 });

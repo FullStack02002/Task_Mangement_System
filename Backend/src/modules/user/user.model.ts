@@ -42,6 +42,11 @@ const userSchema = new Schema<IUserDocument>(
         avatar: {
             type: String,
             default: null
+        },
+        timezone: {
+            type: String,
+            default: "UTC",
+            trim: true
         }
     },
     {

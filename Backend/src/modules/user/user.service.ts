@@ -30,7 +30,8 @@ export const CreateUser = async (data: CreateUserDTO) => {
     const user: IUserDocument = await User.create({
         name: data.name,
         email: data.email,
-        password: data.password
+        password: data.password,
+        timezone: data.timezone ?? "UTC"
     })
 
     // generate token 
@@ -328,7 +329,13 @@ export const resetPassword = async (
 }
 
 
-export const googleAuthService = async (user: IUserDocument) => {
+export const googleAuthService = async (user: IUserDocument, timezone?: string) => {
+
+    if (timezone && timezone !== "UTC" && user.timezone === "UTC") {
+        await User.findByIdAndUpdate(user._id, { timezone });
+    }
+
+
     const accessToken = generateAccessToken({
         _id: user._id.toString(),
         email: user.email,

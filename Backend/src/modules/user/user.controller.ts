@@ -24,8 +24,8 @@ const cookieOptions = {
 
 
 export const registerUser = asyncHandler(async (req: Request, res: Response) => {
-    const { name, email, password } = req.body;
-    const user = await userService.CreateUser({ name, email, password });
+    const { name, email, password, timezone } = req.body;
+    const user = await userService.CreateUser({ name, email, password, timezone });
     res.status(201).json(new ApiResponse(201, user, "Registration successful. Verification link sent to your email"))
 })
 
@@ -119,7 +119,13 @@ export const googleAuthCallback = asyncHandler(
             return res.redirect(`${env.FRONTEND_URL}/login?error=google_failed`);
         }
 
-        const { accessToken, refreshToken } = await userService.googleAuthService(user);
+        const timezone = req.query.state
+            ? decodeURIComponent(req.query.state as string)
+            : "UTC";
+
+
+        const { accessToken, refreshToken } = await userService.googleAuthService(user, timezone);
+        console.log(accessToken);
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,

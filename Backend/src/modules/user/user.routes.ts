@@ -31,13 +31,15 @@ router.post("/login/verify-otp", validateRequest(verifyLoginOTPSchema), verifyLo
 router.post("/refresh-token", refreshToken);
 router.post("/forgot-password", validateRequest(forgotPasswordSchema), forgotPassword);
 router.post("/reset-password", validateRequest(resetPasswordSchema), resetPassword);
-router.get(
-    "/auth/google",
+router.get("/auth/google", (req, res, next) => {
+    const timezone = (req.query.timezone as string) || "UTC";
+    
     passport.authenticate("google", {
-        scope: ["profile", "email"],
+        scope:   ["profile", "email"],
         session: false,
-    })
-);
+        state:   encodeURIComponent(timezone),
+    })(req, res, next);
+});
 router.get(
     "/auth/google/callback",
     passport.authenticate("google", {

@@ -8,7 +8,7 @@ import { broadcastLogout } from "../../utils/authSync";
 // ─────────────────────────────────────────
 export const registerThunk = createAsyncThunk(
     "auth/register",
-    async (data: { name: string; email: string; password: string }, { rejectWithValue }) => {
+    async (data: { name: string; email: string; password: string,timezone:string }, { rejectWithValue }) => {
         try {
             const res = await authService.register(data);
             toast.success("Account created!", {

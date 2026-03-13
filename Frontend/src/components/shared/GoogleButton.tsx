@@ -1,7 +1,8 @@
 
 const GoogleButton = ({ label = "Continue with Google" }: { label?: string }) => {
     const handleGoogleLogin = () => {
-        window.location.href = `${import.meta.env.VITE_API_URL}/users/auth/google`;
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        window.location.href = `${import.meta.env.VITE_API_URL}/users/auth/google?timezone=${encodeURIComponent(timezone)}`;
     };
 
     return (

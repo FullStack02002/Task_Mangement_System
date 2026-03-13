@@ -26,11 +26,14 @@ const Register = () => {
   } = useForm<RegisterFormData>();
 
   const onSubmit = async (data: RegisterFormData) => {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
 
     const result = await (dispatch as any)(registerThunk({
       name: data.name,
       email: data.email,
       password: data.password,
+      timezone,
     }));
 
 
