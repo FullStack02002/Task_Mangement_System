@@ -5,7 +5,13 @@ import VerifyEmail from "./auth/VerifyEmail";
 import ForgotPassword from "./auth/ForgotPassword";
 import ResetPassword from "./auth/ResetPassword";
 import GoogleAuthSuccess from "./auth/GoogleAuthSuccess";
+import Dashboard from "./Dashboard";
 
 
 
-export { Login, Register, Home, VerifyEmail,ForgotPassword,ResetPassword ,GoogleAuthSuccess}
+export {
+    Login, Register, Home,
+    VerifyEmail, ForgotPassword, ResetPassword,
+    GoogleAuthSuccess,
+    Dashboard
+}

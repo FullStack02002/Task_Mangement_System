@@ -1,13 +1,16 @@
 import { Routes, Route } from "react-router-dom";
 import { ROUTES } from "./routePaths";
 import ProtectedRoute from "../components/shared/ProtectedRoute";
-import { Login, Register, Home, VerifyEmail, ForgotPassword, ResetPassword, GoogleAuthSuccess } from "../pages/index.ts"
+import {
+    Login, Register, Home, VerifyEmail,
+    ForgotPassword, ResetPassword, GoogleAuthSuccess, Dashboard
+} from "../pages/index.ts"
 
 const AppRoutes = () => {
     return (
         <Routes>
 
-            {/* ── Public Routes ── */}
+            {/* ── Protected Routes ── */}
             <Route path={ROUTES.LOGIN} element={
                 <ProtectedRoute authentication={false}>
                     <Login />
@@ -38,10 +41,18 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
+            <Route path={ROUTES.DASHBOARD} element={
+                <ProtectedRoute authentication={true}>
+                    <Dashboard />
+                </ProtectedRoute>
+            } />
+
             <Route path={ROUTES.GOOGLE_AUTH_SUCCESS} element={<GoogleAuthSuccess />} />
 
 
-            {/* ── Protected Routes ── */}
+
+
+            {/* ── Public Routes ── */}
 
             <Route path={ROUTES.HOME} element={
                 <Home />

@@ -52,6 +52,13 @@ const Header = () => {
                                 </span>
                             </span>
 
+                            <Link
+                                to={ROUTES.DASHBOARD}
+                                className="text-sm text-white px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition-all shadow-lg shadow-purple-900/40 font-medium"
+                            >
+                                Dashboard
+                            </Link>
+
                             <button
                                 onClick={handleLogout}
                                 disabled={loading}
