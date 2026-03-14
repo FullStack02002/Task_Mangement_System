@@ -46,11 +46,13 @@ app.get("/", (req, res) => {
 // Routes Import
 import userRouter from "./modules/user/user.routes.js"
 import taskRouter from "./modules/task/task.routes.js"
+import archivedTaskRouter from "./modules/archived-task/archived-task.routes.js"
 
 
 
 app.use("/api/users", userRouter);
-app.use("/api/tasks", taskRouter)
+app.use("/api/tasks", taskRouter);
+app.use("/api/archived", archivedTaskRouter)
 
 
 
@@ -63,8 +65,8 @@ app.use((err: unknown, req: express.Request, res: express.Response, next: expres
         res.status(err.statusCode).json({
             success: false,
             message: err.message,
-            errors:  err.errors,
-            data:    null,
+            errors: err.errors,
+            data: null,
         });
     } else {
         console.error(`[500] ${req.method} ${req.path} -`, err);
@@ -72,8 +74,8 @@ app.use((err: unknown, req: express.Request, res: express.Response, next: expres
         res.status(500).json({
             success: false,
             message: "Internal Server Error",
-            errors:  [],
-            data:    null,
+            errors: [],
+            data: null,
         });
     }
 })

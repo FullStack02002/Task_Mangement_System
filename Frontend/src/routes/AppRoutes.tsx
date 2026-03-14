@@ -3,7 +3,7 @@ import { ROUTES } from "./routePaths";
 import ProtectedRoute from "../components/shared/ProtectedRoute";
 import {
     Login, Register, Home, VerifyEmail,
-    ForgotPassword, ResetPassword, GoogleAuthSuccess, Dashboard
+    ForgotPassword, ResetPassword, GoogleAuthSuccess, Dashboard,History
 } from "../pages/index.ts"
 
 const AppRoutes = () => {
@@ -44,6 +44,12 @@ const AppRoutes = () => {
             <Route path={ROUTES.DASHBOARD} element={
                 <ProtectedRoute authentication={true}>
                     <Dashboard />
+                </ProtectedRoute>
+            } />
+
+            <Route path={ROUTES.HISTORY} element={
+                <ProtectedRoute authentication={true}>
+                    <History />
                 </ProtectedRoute>
             } />
 

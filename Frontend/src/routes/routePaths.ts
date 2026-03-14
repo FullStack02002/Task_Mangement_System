@@ -7,6 +7,7 @@ export const ROUTES = {
     RESET_PASSWORD: "/reset-password",
     GOOGLE_AUTH_SUCCESS: "/auth/google/success",
     DASHBOARD: "/dashboard",
+    HISTORY: "/history",
 
     // Home
     HOME: "/"
