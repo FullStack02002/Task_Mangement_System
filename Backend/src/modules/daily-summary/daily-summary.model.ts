@@ -22,10 +22,36 @@ const dailySummarySchema = new Schema(
             type: Date,
             default: () => new Date(),
         },
+        notification: {
+            status: {
+                type: String,
+                enum: ["pending", "sent", "failed"],
+                default: "pending",
+            },
+            sentAt: {
+                type: Date,
+                default: null,
+            },
+            channel: {
+                type: String,
+                enum: ["email"],
+                default: "email",
+            },
+            failureReason: {
+                type: String,
+                default: null,
+            },
+            retryCount: {
+                type: Number,
+                default: 0,
+            },
+        },
     },
     { timestamps: true }
 );
 
 dailySummarySchema.index({ userId: 1, summaryDate: 1 }, { unique: true });
+
+dailySummarySchema.index({ "notification.status": 1 });
 
 export const DailySummary = model("DailySummary", dailySummarySchema);

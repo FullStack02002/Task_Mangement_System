@@ -60,7 +60,7 @@ app.use("/api/archived", archivedTaskRouter)
 
 app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (err instanceof ApiError) {
-        console.error(`[${err.statusCode}] ${req.method} ${req.path} - ${err.message}`);
+        // console.error(`[${err.statusCode}] ${req.method} ${req.path} - ${err.message}`);
 
         res.status(err.statusCode).json({
             success: false,
@@ -69,7 +69,7 @@ app.use((err: unknown, req: express.Request, res: express.Response, next: expres
             data: null,
         });
     } else {
-        console.error(`[500] ${req.method} ${req.path} -`, err);
+        // console.error(`[500] ${req.method} ${req.path} -`, err);
 
         res.status(500).json({
             success: false,

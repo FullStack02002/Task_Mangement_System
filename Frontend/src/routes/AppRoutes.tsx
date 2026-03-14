@@ -3,8 +3,9 @@ import { ROUTES } from "./routePaths";
 import ProtectedRoute from "../components/shared/ProtectedRoute";
 import {
     Login, Register, Home, VerifyEmail,
-    ForgotPassword, ResetPassword, GoogleAuthSuccess, Dashboard,History
+    ForgotPassword, ResetPassword, GoogleAuthSuccess, Dashboard
 } from "../pages/index.ts"
+import DashboardLayout from "../components/layout/DashboardLayout.tsx";
 
 const AppRoutes = () => {
     return (
@@ -41,17 +42,14 @@ const AppRoutes = () => {
                 </ProtectedRoute>
             } />
 
-            <Route path={ROUTES.DASHBOARD} element={
-                <ProtectedRoute authentication={true}>
-                    <Dashboard />
-                </ProtectedRoute>
-            } />
+            <Route element={<DashboardLayout />}>
+                <Route path={ROUTES.DASHBOARD} element={
+                    <ProtectedRoute authentication={true}>
+                        <Dashboard />
+                    </ProtectedRoute>
+                } />
+            </Route>
 
-            <Route path={ROUTES.HISTORY} element={
-                <ProtectedRoute authentication={true}>
-                    <History />
-                </ProtectedRoute>
-            } />
 
             <Route path={ROUTES.GOOGLE_AUTH_SUCCESS} element={<GoogleAuthSuccess />} />
 

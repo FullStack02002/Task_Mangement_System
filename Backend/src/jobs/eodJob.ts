@@ -5,6 +5,8 @@ import { Task } from "../modules/task/task.model.js";
 import { ArchivedTask } from "../modules/archived-task/archived-task.model.js";
 import { DailySummary } from "../modules/daily-summary/daily-summary.model.js";
 import { toZonedTime, format } from "date-fns-tz";
+import { sendEODSummaryEmail } from "../config/mailer.js";
+
 
 // ─────────────────────────────────────────
 // Helpers
@@ -14,6 +16,55 @@ const getTimezone = (timezone: string | undefined): string => timezone ?? "UTC";
 
 const getDateStr = (date: Date, timezone: string): string =>
     format(toZonedTime(date, timezone), "yyyy-MM-dd", { timeZone: timezone });
+
+const sendEODNotification = async (
+    userId: mongoose.Types.ObjectId,
+    stats: {
+        totalTasks: number;
+        completed: number;
+        pending: number;
+        notCompleted: number;
+        completionPct: number;
+        dateStr: string;
+    }
+) => {
+    try {
+        const user = await User.findById(userId).select("email name").lean();
+        if (!user) return;
+
+        await sendEODSummaryEmail(user.email, user.name, stats);
+
+        // ── mark notification as sent ──
+        await DailySummary.updateOne(
+            { userId, summaryDate: new Date(stats.dateStr) },
+            {
+                $set: {
+                    "notification.status": "sent",
+                    "notification.sentAt": new Date(),
+                },
+            }
+        );
+
+        console.log(`[EOD] ✓ Notification sent to ${user.email}`);
+
+    } catch (error: any) {
+        // ── mark notification as failed ──
+        await DailySummary.updateOne(
+            { userId, summaryDate: new Date(stats.dateStr) },
+            {
+                $set: {
+                    "notification.status": "failed",
+                    "notification.failureReason": error?.message ?? "Unknown error",
+                },
+                $inc: {
+                    "notification.retryCount": 1,
+                },
+            }
+        );
+
+        console.error(`[EOD] ✗ Notification failed for userId=${userId}:`, error?.message);
+    }
+};
 
 // ─────────────────────────────────────────
 // Core EOD logic for a single user
@@ -104,12 +155,27 @@ const runEODForUser = async (
                 completionPct,
             },
             eodExecutedAt: new Date(),
+            notification: {
+                status: "pending",
+                sentAt: null,
+                channel: "email",
+                retryCount: 0,
+            },
         }], { session });
 
         // ── Step 9: commit ──
         await session.commitTransaction();
 
         console.log(`[EOD] ✓ userId=${userId} on ${dateStr} | archived=${tasks.length} | completed=${completed} | notCompleted=${notCompleted}`);
+
+        await sendEODNotification(userId, {
+            totalTasks: tasks.length,
+            completed,
+            pending,
+            notCompleted,
+            completionPct,
+            dateStr,
+        })
 
         return {
             skipped: false,
@@ -173,6 +239,7 @@ const runEODScheduler = async () => {
 // due to server crash or downtime
 // ─────────────────────────────────────────
 
+
 export const recoverMissedEOD = async () => {
     try {
         console.log("[EOD] Checking for missed EOD jobs...");
@@ -191,29 +258,49 @@ export const recoverMissedEOD = async () => {
                 const pastMidnightWindow = hours > 0 || (hours === 0 && minutes > 4);
                 if (!pastMidnightWindow) return;
 
-                // ── get today's date string in user's timezone ──
-                const todayStr = getDateStr(now, timezone);
-                const todayStart = new Date(todayStr);
+                // ── today's midnight in user's timezone (UTC) ──
+                const todayZoned = toZonedTime(now, timezone);
+                todayZoned.setHours(0, 0, 0, 0);
+                const { fromZonedTime } = await import("date-fns-tz");
+                const todayStartUTC = fromZonedTime(todayZoned, timezone);
 
-                // ── EOD already ran today — skip ──
-                const summaryExists = await DailySummary.findOne({
+                // ── find stale tasks strictly before today's midnight ──
+                const staleTasks = await Task.find({
                     userId: user._id,
-                    summaryDate: todayStart,
+                    taskDate: { $lt: todayStartUTC },
                 }).lean();
 
-                if (summaryExists) return;
+                if (staleTasks.length === 0) return;
 
-                // ── only archive tasks from BEFORE today ──
-                // prevents archiving today's tasks on normal deployments
-                const staleTasks = await Task.findOne({
-                    userId: user._id,
-                    taskDate: { $lt: todayStart },
-                }).lean();
+                // ── group by taskDate (already stored as midnight UTC per timezone) ──
+                const dateGroups = new Map<string, Date>();
 
-                if (!staleTasks) return;
+                staleTasks.forEach((task) => {
+                    // use taskDate directly as the key — it's already midnight in user's tz
+                    const key = task.taskDate.toISOString();
+                    if (!dateGroups.has(key)) {
+                        dateGroups.set(key, task.taskDate);
+                    }
+                });
 
-                console.log(`[EOD Recovery] Missed EOD for userId=${user._id} on ${todayStr} — running now`);
-                await runEODForUser(user._id, timezone, todayStr);
+                // ── run EOD for each unique missed taskDate ──
+                for (const [, taskDate] of dateGroups) {
+                    // dateStr for this specific missed day
+                    const dateStr = getDateStr(taskDate, timezone);
+
+                    const summaryExists = await DailySummary.findOne({
+                        userId: user._id,
+                        summaryDate: taskDate,   // match exact stored taskDate
+                    }).lean();
+
+                    if (summaryExists) {
+                        console.log(`[EOD Recovery] Summary already exists for userId=${user._id} on ${dateStr} — skipping`);
+                        continue;
+                    }
+
+                    console.log(`[EOD Recovery] Missed EOD for userId=${user._id} on ${dateStr} — running now`);
+                    await runEODForUser(user._id, timezone, dateStr);
+                }
             })
         );
 
@@ -224,9 +311,6 @@ export const recoverMissedEOD = async () => {
     }
 };
 
-// ─────────────────────────────────────────
-// Start — called once from server.ts
-// ─────────────────────────────────────────
 
 export const startEODJob = () => {
 

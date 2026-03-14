@@ -130,215 +130,218 @@ const Dashboard = () => {
     : null;
 
   return (
-    <div className="min-h-screen bg-[#0d0a1a] px-4 py-8">
-      <div className="max-w-2xl mx-auto flex flex-col gap-6">
+    <>
+      <div className=" bg-[#0d0a1a] px-4 py-8">
+        <div className="max-w-2xl mx-auto flex flex-col gap-6">
 
-        {/* ── Header ── */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-white tracking-tight">
-              {greeting()},{" "}
-              <span className="text-purple-400 font-medium">{user?.name?.split(" ")[0]}</span>
-            </h1>
-            <p className="text-gray-600 text-xs font-bold mt-0.5">{todayLabel}</p>
+          {/* ── Header ── */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight">
+                {greeting()},{" "}
+                <span className="text-purple-400 font-medium">{user?.name?.split(" ")[0]}</span>
+              </h1>
+              <p className="text-gray-600 text-xs font-bold mt-0.5">{todayLabel}</p>
+            </div>
+            {activeTab === "today" && (
+              <button
+                onClick={() => { setEditTask(null); setModalOpen(true); }}
+                className="text-sm px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium transition-all shadow-lg shadow-purple-900/40 cursor-pointer"
+              >
+                + New task
+              </button>
+            )}
           </div>
+
+          {/* ── Tabs ── */}
+          <div className="flex items-center gap-1 bg-[#110d20] border border-purple-900/50 rounded-xl p-1">
+            {(["today", "history"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 py-2 rounded-lg text-sm transition-all cursor-pointer
+                                ${activeTab === tab
+                    ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-900/40"
+                    : "text-gray-500 hover:text-gray-300 font-light"
+                  }`}
+              >
+                {tab === "today" ? "Today's Board" : "History"}
+              </button>
+            ))}
+          </div>
+
+          {/* ════════════════════
+                    TODAY TAB
+                ════════════════════ */}
           {activeTab === "today" && (
-            <button
-              onClick={() => { setEditTask(null); setModalOpen(true); }}
-              className="text-sm px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium transition-all shadow-lg shadow-purple-900/40 cursor-pointer"
-            >
-              + New task
-            </button>
+            <>
+              {/* ── Stats ── */}
+              <div className="grid grid-cols-4 gap-3">
+                {[
+                  { label: "Total", value: total, color: "text-white" },
+                  { label: "Pending", value: pending, color: "text-yellow-400" },
+                  { label: "In progress", value: inProgress, color: "text-blue-400" },
+                  { label: "Completed", value: completed, color: "text-purple-400" },
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-[#110d20] border border-purple-900/50 rounded-xl p-3 flex flex-col gap-1 text-center">
+                    <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
+                    <p className="text-xs text-gray-600 font-bold">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── Progress bar ── */}
+              {total > 0 && (
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs text-gray-500 font-bold">Today's progress</p>
+                    <p className="text-xs text-purple-400 font-medium">{completionPct}%</p>
+                  </div>
+                  <div className="w-full h-1 bg-purple-900/30 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-purple-500 rounded-full transition-all duration-500"
+                      style={{ width: `${completionPct}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ── Task list ── */}
+              <div className="flex flex-col gap-3">
+                {fetchLoading ? (
+                  <><TaskSkeleton /><TaskSkeleton /><TaskSkeleton /></>
+                ) : tasks.length === 0 ? (
+                  <div className="bg-[#110d20] border border-purple-900/50 rounded-xl p-10 text-center flex flex-col items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-600/40 flex items-center justify-center">
+                      <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                        <rect x="2" y="3" width="12" height="2" rx="1" fill="#a78bfa" />
+                        <rect x="2" y="7" width="8" height="2" rx="1" fill="#a78bfa" opacity="0.7" />
+                        <rect x="2" y="11" width="10" height="2" rx="1" fill="#a78bfa" opacity="0.4" />
+                      </svg>
+                    </div>
+                    <p className="text-sm text-gray-400 font-bold">No tasks for today</p>
+                    <p className="text-xs text-gray-600 font-bold">Create your first task to get started</p>
+                    <button
+                      onClick={() => setModalOpen(true)}
+                      className="mt-1 text-sm px-4 py-2 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 hover:bg-purple-600/30 transition-all font-bold cursor-pointer"
+                    >
+                      + Add a task
+                    </button>
+                  </div>
+                ) : (
+                  tasks.map((task) => (
+                    <TaskCard
+                      key={task._id}
+                      task={task}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onStatusChange={handleStatusChange}
+                      deleteLoading={deleteLoading}
+                      updateLoading={updateLoading}
+                    />
+                  ))
+                )}
+              </div>
+            </>
+          )}
+
+          {/* ════════════════════
+                    HISTORY TAB
+                ════════════════════ */}
+          {activeTab === "history" && (
+            <div className="flex flex-col gap-5">
+
+              {/* ── Calendar ── */}
+              {datesLoading ? (
+                <div className="bg-[#110d20] border border-purple-900/50 rounded-2xl p-5 animate-pulse h-64" />
+              ) : (
+                <Calendar
+                  archivedDates={archivedDates}
+                  selectedDate={selectedDate}
+                  onSelectDate={handleSelectDate}
+                />
+              )}
+
+              {/* ── No date selected ── */}
+              {!selectedDate ? (
+                <div className="bg-[#110d20] border border-purple-900/50 rounded-xl p-8 text-center flex flex-col items-center gap-3">
+                  <p className="text-sm text-gray-400 font-light">Select a date from the calendar</p>
+                  <p className="text-xs text-gray-600 font-light">Dates with a purple dot have archived tasks</p>
+                </div>
+
+              ) : archiveFetchLoading ? (
+                <><TaskSkeleton /><TaskSkeleton /><TaskSkeleton /></>
+
+              ) : (
+                <>
+                  {/* ── Date heading ── */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium text-white">{selectedDateLabel}</p>
+                    <p className="text-xs text-gray-600 font-light">{archiveTotal} tasks</p>
+                  </div>
+
+                  {/* ── Stats ── */}
+                  {stats && archiveTotal > 0 && (
+                    <>
+                      <div className="grid grid-cols-4 gap-3">
+                        {[
+                          { label: "Total", value: archiveTotal, color: "text-white" },
+                          { label: "Completed", value: stats.completed, color: "text-purple-400" },
+                          { label: "Pending", value: stats.pending, color: "text-yellow-400" },
+                          { label: "Not completed", value: stats.not_completed, color: "text-red-400" },
+                        ].map((stat) => (
+                          <div key={stat.label} className="bg-[#110d20] border border-purple-900/50 rounded-xl p-3 flex flex-col gap-1 text-center">
+                            <p className={`text-xl font-light ${stat.color}`}>{stat.value}</p>
+                            <p className="text-xs text-gray-600 font-light">{stat.label}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* ── Progress ── */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-500 font-light">Completion rate</p>
+                          <p className="text-xs text-purple-400 font-medium">{stats.completionPct}%</p>
+                        </div>
+                        <div className="w-full h-1 bg-purple-900/30 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-purple-500 rounded-full transition-all duration-500"
+                            style={{ width: `${stats.completionPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* ── Archived task list ── */}
+                  {archivedTasks.length === 0 ? (
+                    <div className="bg-[#110d20] border border-purple-900/50 rounded-xl p-8 text-center">
+                      <p className="text-sm text-gray-500 font-light">No tasks found for this date</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {archivedTasks.map((task) => (
+                        <ArchivedTaskCard key={task._id} task={task} />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           )}
         </div>
 
-        {/* ── Tabs ── */}
-        <div className="flex items-center gap-1 bg-[#110d20] border border-purple-900/50 rounded-xl p-1">
-          {(["today", "history"] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-lg text-sm transition-all cursor-pointer
-                                ${activeTab === tab
-                  ? "bg-purple-600 text-white font-medium shadow-lg shadow-purple-900/40"
-                  : "text-gray-500 hover:text-gray-300 font-light"
-                }`}
-            >
-              {tab === "today" ? "Today's Board" : "History"}
-            </button>
-          ))}
-        </div>
-
-        {/* ════════════════════
-                    TODAY TAB
-                ════════════════════ */}
-        {activeTab === "today" && (
-          <>
-            {/* ── Stats ── */}
-            <div className="grid grid-cols-4 gap-3">
-              {[
-                { label: "Total", value: total, color: "text-white" },
-                { label: "Pending", value: pending, color: "text-yellow-400" },
-                { label: "In progress", value: inProgress, color: "text-blue-400" },
-                { label: "Completed", value: completed, color: "text-purple-400" },
-              ].map((stat) => (
-                <div key={stat.label} className="bg-[#110d20] border border-purple-900/50 rounded-xl p-3 flex flex-col gap-1 text-center">
-                  <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-                  <p className="text-xs text-gray-600 font-bold">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* ── Progress bar ── */}
-            {total > 0 && (
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-500 font-bold">Today's progress</p>
-                  <p className="text-xs text-purple-400 font-medium">{completionPct}%</p>
-                </div>
-                <div className="w-full h-1 bg-purple-900/30 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                    style={{ width: `${completionPct}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* ── Task list ── */}
-            <div className="flex flex-col gap-3">
-              {fetchLoading ? (
-                <><TaskSkeleton /><TaskSkeleton /><TaskSkeleton /></>
-              ) : tasks.length === 0 ? (
-                <div className="bg-[#110d20] border border-purple-900/50 rounded-xl p-10 text-center flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-600/40 flex items-center justify-center">
-                    <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
-                      <rect x="2" y="3" width="12" height="2" rx="1" fill="#a78bfa" />
-                      <rect x="2" y="7" width="8" height="2" rx="1" fill="#a78bfa" opacity="0.7" />
-                      <rect x="2" y="11" width="10" height="2" rx="1" fill="#a78bfa" opacity="0.4" />
-                    </svg>
-                  </div>
-                  <p className="text-sm text-gray-400 font-bold">No tasks for today</p>
-                  <p className="text-xs text-gray-600 font-bold">Create your first task to get started</p>
-                  <button
-                    onClick={() => setModalOpen(true)}
-                    className="mt-1 text-sm px-4 py-2 rounded-xl bg-purple-600/20 border border-purple-600/40 text-purple-300 hover:bg-purple-600/30 transition-all font-bold cursor-pointer"
-                  >
-                    + Add a task
-                  </button>
-                </div>
-              ) : (
-                tasks.map((task) => (
-                  <TaskCard
-                    key={task._id}
-                    task={task}
-                    onEdit={handleEdit}
-                    onDelete={handleDelete}
-                    onStatusChange={handleStatusChange}
-                    deleteLoading={deleteLoading}
-                    updateLoading={updateLoading}
-                  />
-                ))
-              )}
-            </div>
-          </>
-        )}
-
-        {/* ════════════════════
-                    HISTORY TAB
-                ════════════════════ */}
-        {activeTab === "history" && (
-          <div className="flex flex-col gap-5">
-
-            {/* ── Calendar ── */}
-            {datesLoading ? (
-              <div className="bg-[#110d20] border border-purple-900/50 rounded-2xl p-5 animate-pulse h-64" />
-            ) : (
-              <Calendar
-                archivedDates={archivedDates}
-                selectedDate={selectedDate}
-                onSelectDate={handleSelectDate}
-              />
-            )}
-
-            {/* ── No date selected ── */}
-            {!selectedDate ? (
-              <div className="bg-[#110d20] border border-purple-900/50 rounded-xl p-8 text-center flex flex-col items-center gap-3">
-                <p className="text-sm text-gray-400 font-light">Select a date from the calendar</p>
-                <p className="text-xs text-gray-600 font-light">Dates with a purple dot have archived tasks</p>
-              </div>
-
-            ) : archiveFetchLoading ? (
-              <><TaskSkeleton /><TaskSkeleton /><TaskSkeleton /></>
-
-            ) : (
-              <>
-                {/* ── Date heading ── */}
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-white">{selectedDateLabel}</p>
-                  <p className="text-xs text-gray-600 font-light">{archiveTotal} tasks</p>
-                </div>
-
-                {/* ── Stats ── */}
-                {stats && archiveTotal > 0 && (
-                  <>
-                    <div className="grid grid-cols-4 gap-3">
-                      {[
-                        { label: "Total", value: archiveTotal, color: "text-white" },
-                        { label: "Completed", value: stats.completed, color: "text-purple-400" },
-                        { label: "Pending", value: stats.pending, color: "text-yellow-400" },
-                        { label: "Not completed", value: stats.not_completed, color: "text-red-400" },
-                      ].map((stat) => (
-                        <div key={stat.label} className="bg-[#110d20] border border-purple-900/50 rounded-xl p-3 flex flex-col gap-1 text-center">
-                          <p className={`text-xl font-light ${stat.color}`}>{stat.value}</p>
-                          <p className="text-xs text-gray-600 font-light">{stat.label}</p>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* ── Progress ── */}
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500 font-light">Completion rate</p>
-                        <p className="text-xs text-purple-400 font-medium">{stats.completionPct}%</p>
-                      </div>
-                      <div className="w-full h-1 bg-purple-900/30 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                          style={{ width: `${stats.completionPct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* ── Archived task list ── */}
-                {archivedTasks.length === 0 ? (
-                  <div className="bg-[#110d20] border border-purple-900/50 rounded-xl p-8 text-center">
-                    <p className="text-sm text-gray-500 font-light">No tasks found for this date</p>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    {archivedTasks.map((task) => (
-                      <ArchivedTaskCard key={task._id} task={task} />
-                    ))}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
+        {/* ── Modal ── */}
+        <TaskModal
+          open={modalOpen}
+          onClose={handleModalClose}
+          onSubmit={editTask ? handleUpdate : handleCreate}
+          loading={editTask ? updateLoading : createLoading}
+          editTask={editTask}
+        />
       </div>
+    </>
 
-      {/* ── Modal ── */}
-      <TaskModal
-        open={modalOpen}
-        onClose={handleModalClose}
-        onSubmit={editTask ? handleUpdate : handleCreate}
-        loading={editTask ? updateLoading : createLoading}
-        editTask={editTask}
-      />
-    </div>
   );
 };
 

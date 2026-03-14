@@ -2,12 +2,16 @@ import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hook";
 import { logoutThunk } from "../../features/auth/authThunks";
 import { ROUTES } from "../../routes/routePaths";
+import { useLocation } from "react-router-dom";
+
 
 const Header = () => {
     const dispatch = useAppDispatch();
     const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
     const user = useAppSelector((state) => state.auth.user);
     const loading = useAppSelector((state) => state.auth.logoutLoading);
+    const location = useLocation();
+    const isDashboard = location.pathname === ROUTES.DASHBOARD;
 
     const handleLogout = () => {
         (dispatch as any)(logoutThunk());
@@ -52,12 +56,14 @@ const Header = () => {
                                 </span>
                             </span>
 
-                            <Link
-                                to={ROUTES.DASHBOARD}
-                                className="text-sm text-white px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition-all shadow-lg shadow-purple-900/40 font-medium"
-                            >
-                                Dashboard
-                            </Link>
+                            {!isDashboard && (
+                                <Link
+                                    to={ROUTES.DASHBOARD}
+                                    className="text-sm text-white px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 transition-all shadow-lg shadow-purple-900/40 font-medium"
+                                >
+                                    Dashboard
+                                </Link>
+                            )}
 
                             <button
                                 onClick={handleLogout}

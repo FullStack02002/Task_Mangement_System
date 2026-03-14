@@ -125,7 +125,6 @@ export const googleAuthCallback = asyncHandler(
 
 
         const { accessToken, refreshToken } = await userService.googleAuthService(user, timezone);
-        console.log(accessToken);
 
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
