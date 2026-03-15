@@ -4,8 +4,9 @@ import { User } from "../modules/user/user.model.js";
 import { Task } from "../modules/task/task.model.js";
 import { ArchivedTask } from "../modules/archived-task/archived-task.model.js";
 import { DailySummary } from "../modules/daily-summary/daily-summary.model.js";
-import { toZonedTime, format } from "date-fns-tz";
+import { toZonedTime, format, fromZonedTime } from "date-fns-tz";
 import { sendEODSummaryEmail } from "../config/mailer.js";
+import { env } from "../config/env.js";
 
 
 // ─────────────────────────────────────────
@@ -26,6 +27,7 @@ const sendEODNotification = async (
         notCompleted: number;
         completionPct: number;
         dateStr: string;
+        summaryDateStr: string;
     }
 ) => {
     try {
@@ -36,7 +38,7 @@ const sendEODNotification = async (
 
         // ── mark notification as sent ──
         await DailySummary.updateOne(
-            { userId, summaryDate: new Date(stats.dateStr) },
+            { userId, summaryDate: new Date(stats.summaryDateStr) },
             {
                 $set: {
                     "notification.status": "sent",
@@ -50,7 +52,7 @@ const sendEODNotification = async (
     } catch (error: any) {
         // ── mark notification as failed ──
         await DailySummary.updateOne(
-            { userId, summaryDate: new Date(stats.dateStr) },
+            { userId, summaryDate: new Date(stats.summaryDateStr) },
             {
                 $set: {
                     "notification.status": "failed",
@@ -121,6 +123,12 @@ const runEODForUser = async (
         const notCompleted = tasks.filter((t) => t.status === "in_progress").length;
         const completionPct = Math.round((completed / tasks.length) * 100);
 
+        // ── task's actual date for email ──
+        const firstTask = tasks.find((t) => t.taskDate);
+        const taskDateStr = firstTask
+            ? getDateStr(firstTask.taskDate, timezone)
+            : dateStr;
+
         // ── Step 5: build archive documents ──
         const archivedDocs = tasks.map((task) => ({
             originalTaskId: task._id,
@@ -174,7 +182,8 @@ const runEODForUser = async (
             pending,
             notCompleted,
             completionPct,
-            dateStr,
+            dateStr: taskDateStr,
+            summaryDateStr: dateStr
         })
 
         return {
@@ -261,7 +270,6 @@ export const recoverMissedEOD = async () => {
                 // ── today's midnight in user's timezone (UTC) ──
                 const todayZoned = toZonedTime(now, timezone);
                 todayZoned.setHours(0, 0, 0, 0);
-                const { fromZonedTime } = await import("date-fns-tz");
                 const todayStartUTC = fromZonedTime(todayZoned, timezone);
 
                 // ── find stale tasks strictly before today's midnight ──
@@ -314,7 +322,9 @@ export const recoverMissedEOD = async () => {
 
 export const startEODJob = () => {
 
-    recoverMissedEOD();
+    if (env.NODE_ENV === "production") {
+        recoverMissedEOD();
+    }
 
     cron.schedule("* * * * *", async () => {
         await runEODScheduler();

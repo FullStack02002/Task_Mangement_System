@@ -136,7 +136,7 @@ export const sendEODSummaryEmail = async (
                     </table>
                 </div>
 
-                <p style="color: #4b5563; font-size: 12px; text-align: center;">TaskFlow · Sent at ${new Date().toLocaleTimeString()}</p>
+                <p style="color: #4b5563; font-size: 12px; text-align: center;">TaskFlow</p>
             </div>
         `,
     });
