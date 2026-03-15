@@ -4,7 +4,6 @@ import { asyncHandler } from "../../utils/asyncHandler.js";
 import { ApiResponse } from "../../utils/ApiResponse.js";
 import { ApiError } from "../../utils/ApiError.js";
 import { isValidObjectId } from "mongoose";
-import type { ITaskDocument } from "./task.types.js";
 import type { IUserDocument } from "../user/user.types.js";
 import type { CreateTaskDTO, UpdateTaskDTO } from "./task.dto.js";
 

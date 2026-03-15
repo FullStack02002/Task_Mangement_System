@@ -74,7 +74,7 @@ export const verifyEmail = async (email: string, token: string) => {
     const user = await User.findOneAndUpdate(
         { email },
         { isVerified: true },
-        { new: true }
+        { returnDocument: "after" }
     );
 
     if (!user) throw new ApiError(404, "User not found")

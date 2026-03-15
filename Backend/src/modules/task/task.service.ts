@@ -9,15 +9,12 @@ import { toZonedTime, fromZonedTime } from "date-fns-tz";
 
 
 // Helpers
-
 const getStartOfDayInTimezone = (timezone: string): Date => {
     const now = new Date();
     const zoned = toZonedTime(now, timezone);
     zoned.setHours(0, 0, 0, 0);
     return fromZonedTime(zoned, timezone);
 };
-
-
 
 export const createTask = async (userId: Types.ObjectId, timezone: string, data: CreateTaskDTO) => {
     const today = getStartOfDayInTimezone(timezone);
@@ -32,7 +29,6 @@ export const createTask = async (userId: Types.ObjectId, timezone: string, data:
 
     return toTaskResponseDTO(task);
 };
-
 
 export const getTaskById = async (taskId: string, userId: Types.ObjectId) => {
     const task = await Task.findById(taskId).lean();
