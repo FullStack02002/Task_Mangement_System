@@ -47,16 +47,16 @@ const Register = () => {
   return (
     <div className="min-h-screen bg-[#0d0a1a] flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-
         {/* ── Brand ── */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-600/40 mb-5">
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
-              <rect x="2" y="3" width="12" height="2" rx="1" fill="#a78bfa" />
-              <rect x="2" y="7" width="8" height="2" rx="1" fill="#a78bfa" opacity="0.7" />
-              <rect x="2" y="11" width="10" height="2" rx="1" fill="#a78bfa" opacity="0.4" />
-            </svg>
-          </div>
+          <Link to="/">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-purple-600/20 border border-purple-600/40 mb-5">
+              <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+                <rect x="2" y="3" width="12" height="2" rx="1" fill="#a78bfa" />
+                <rect x="2" y="7" width="8" height="2" rx="1" fill="#a78bfa" opacity="0.7" />
+                <rect x="2" y="11" width="10" height="2" rx="1" fill="#a78bfa" opacity="0.4" />
+              </svg>
+            </div></Link>
           <h1 className="text-2xl font-light text-white tracking-tight mb-2">
             Create your account
           </h1>
