@@ -36,14 +36,14 @@ const Header = () => {
                 </Link>
 
                 {/* ── Nav ── */}
-                <nav className="hidden md:flex items-center gap-7">
+                {!isDashboard && <nav className="hidden md:flex items-center gap-7">
                     <a href="#features" className="text-sm text-gray-400 hover:text-white transition-colors font-light">
                         Features
                     </a>
                     <a href="#how-it-works" className="text-sm text-gray-400 hover:text-white transition-colors font-light">
                         How it works
                     </a>
-                </nav>
+                </nav>}
 
                 {/* ── Auth Buttons ── */}
                 <div className="flex items-center gap-3">
