@@ -13,8 +13,9 @@ import { env } from "../../config/env.js";
 
 const cookieOptions = {
     httpOnly: true,
-    secure: true,
+    secure: env.NODE_ENV === "production",
     sameSite: "lax" as const,
+    domain: env.NODE_ENV === "production" ? env.COOKIE_DOMAIN : "localhost",
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 
@@ -129,7 +130,8 @@ export const googleAuthCallback = asyncHandler(
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: env.NODE_ENV === "production",
-            sameSite: "lax",
+            sameSite: "lax" as const,
+            domain: env.NODE_ENV === "production" ? env.COOKIE_DOMAIN : "localhost",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
