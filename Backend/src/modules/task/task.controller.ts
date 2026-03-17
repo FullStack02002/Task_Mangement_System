@@ -27,7 +27,6 @@ export const createTask = asyncHandler(async (req: Request, res: Response) => {
     );
 });
 
-
 export const getTaskById = asyncHandler(async (req: Request, res: Response) => {
     const user = req.user as IUserDocument;
     if (!user) throw new ApiError(401, "Unauthorized");
