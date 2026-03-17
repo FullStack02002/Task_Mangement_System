@@ -78,8 +78,20 @@ export const refreshToken = asyncHandler(async (req: Request, res: Response) => 
     const token = req.cookies?.refreshToken || req.body?.refreshToken;
     if (!token) throw new ApiError(401, "Refresh token missing");
 
-    const { accessToken } = await userService.refreshToken(token);
-    res.status(200).json(new ApiResponse(200, { accessToken }, "Token refreshed"));
+
+    try {
+        const { accessToken } = await userService.refreshToken(token);
+        res.status(200).json(new ApiResponse(200, { accessToken }, "Token refreshed"));
+
+    } catch (error) {
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: env.NODE_ENV === "production",
+            sameSite: "lax" as const,
+            domain: env.NODE_ENV === "production" ? env.COOKIE_DOMAIN : undefined,
+        });
+        throw error;
+    }
 });
 
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
