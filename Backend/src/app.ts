@@ -56,7 +56,7 @@ app.use(
             connectSrc: [
                 "'self'",
                 env.NODE_ENV === "production"
-                    ? "https://example2.gajrathore.dev"
+                    ? "api.gajrathore.dev"
                     : "http://localhost:5000",
             ],
 
