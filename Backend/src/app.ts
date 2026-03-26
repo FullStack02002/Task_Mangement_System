@@ -56,7 +56,7 @@ app.use(
             connectSrc: [
                 "'self'",
                 env.NODE_ENV === "production"
-                    ? "api.gajrathore.dev"
+                    ? "http://localhost:5000" ///***** need to be change when deployed*********/
                     : "http://localhost:5000",
             ],
 
@@ -138,8 +138,6 @@ app.use("/api/archived", archivedTaskRouter)
 
 app.use((err: unknown, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (err instanceof ApiError) {
-        // console.error(`[${err.statusCode}] ${req.method} ${req.path} - ${err.message}`);
-
         res.status(err.statusCode).json({
             success: false,
             message: err.message,
@@ -147,8 +145,6 @@ app.use((err: unknown, req: express.Request, res: express.Response, next: expres
             data: null,
         });
     } else {
-        // console.error(`[500] ${req.method} ${req.path} -`, err);
-
         res.status(500).json({
             success: false,
             message: "Internal Server Error",
